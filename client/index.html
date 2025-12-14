@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Management System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="bank-logo">🏦</div>
+                <h1>Banking Management System</h1>
+                <p>Internal Portal</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+            <div class="login-footer">
+                <p>Demo Credentials:</p>
+                <small>admin / password123 | teller1 / password123 | manager1 / password123 | auditor1 / password123</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="bank-logo-small">🏦</div>
+                <span class="bank-name">BMS</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="accounts">
+                    <span class="nav-icon">💳</span>
+                    <span class="nav-text">Accounts</span>
+                </a>
+                <a href="#" class="nav-item" data-page="transactions">
+                    <span class="nav-icon">💸</span>
+                    <span class="nav-text">Transactions</span>
+                </a>
+                <a href="#" class="nav-item" data-page="approvals" data-roles="admin,manager">
+                    <span class="nav-icon">✅</span>
+                    <span class="nav-text">Approvals</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reversals" data-roles="admin,manager">
+                    <span class="nav-icon">↩️</span>
+                    <span class="nav-text">Reversals</span>
+                </a>
+                <a href="#" class="nav-item" data-page="logs">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Audit Logs</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="#" class="nav-item" data-page="simulation" data-roles="admin,manager,teller">
+                    <span class="nav-icon">🧪</span>
+                    <span class="nav-text">Simulation</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-outline btn-block">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div class="system-status" id="systemStatus">
+                        <span class="status-dot"></span>
+                        <span class="status-text">System Healthy</span>
+                    </div>
+                    <div class="user-info">
+                        <span id="userRole" class="user-role">Admin</span>
+                        <span id="userName" class="user-name">John Doe</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content Container -->
+            <div class="content-area">
+                <!-- Dashboard Page -->
+                <div id="dashboardPage" class="page active">
+                    <div class="summary-cards">
+                        <div class="card summary-card">
+                            <div class="card-icon blue">💳</div>
+                            <div class="card-content">
+                                <h3 id="totalAccounts">0</h3>
+                                <p>Active Accounts</p>
+                            </div>
+                        </div>
+                        <div class="card summary-card">
+                            <div class="card-icon yellow">⏳</div>
+                            <div class="card-content">
+                                <h3 id="pendingTransactions">0</h3>
+                                <p>Pending Transactions</p>
+                            </div>
+                        </div>
+                        <div class="card summary-card" id="pendingApprovalsCard" style="display: none;">
+                            <div class="card-icon orange">✅</div>
+                            <div class="card-content">
+                                <h3 id="pendingApprovals">0</h3>
+                                <p>Pending Approvals</p>
+                            </div>
+                        </div>
+                        <div class="card summary-card">
+                            <div class="card-icon red">❌</div>
+                            <div class="card-content">
+                                <h3 id="failedToday">0</h3>
+                                <p>Failed Today</p>
+                            </div>
+                        </div>
+                        <div class="card summary-card">
+                            <div class="card-icon gray">🔒</div>
+                            <div class="card-content">
+                                <h3 id="frozenAccounts">0</h3>
+                                <p>Frozen Accounts</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Activity</h3>
+                                <button class="btn btn-sm btn-outline" onclick="Dashboard.loadRecentActivity()">Refresh</button>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Reference</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentActivityTable">
+                                        <tr><td colspan="6" class="loading">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>System Health</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="health-indicators" id="healthIndicators">
+                                    <div class="health-item">
+                                        <span class="health-label">Database</span>
+                                        <span class="health-status healthy" id="dbHealth">Healthy</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Stuck Transactions</span>
+                                        <span class="health-status" id="stuckHealth">0</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Stale Pending</span>
+                                        <span class="health-status" id="stalePendingHealth">0</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Overall Status</span>
+                                        <span class="health-status healthy" id="overallHealth">Healthy</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Today's Summary</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="completedToday">0</span>
+                                    <span class="stat-label">Completed Today</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="volumeToday">$0</span>
+                                    <span class="stat-label">Total Volume</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stuckTransactions">0</span>
+                                    <span class="stat-label">Stuck Transactions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="pendingReversals">0</span>
+                                    <span class="stat-label">Pending Reversals</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accounts Page -->
+                <div id="accountsPage" class="page">
+                    <div class="page-actions">
+                        <div class="filters">
+                            <select id="accountStatusFilter" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="frozen">Frozen</option>
+                                <option value="closed">Closed</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <select id="accountTypeFilter" class="form-control">
+                                <option value="">All Types</option>
+                                <option value="savings">Savings</option>
+                                <option value="checking">Checking</option>
+                                <option value="business">Business</option>
+                                <option value="fixed_deposit">Fixed Deposit</option>
+                            </select>
+                            <input type="text" id="accountSearch" class="form-control" placeholder="Search accounts...">
+                            <button class="btn btn-primary" onclick="Accounts.load()">Search</button>
+                        </div>
+                        <button class="btn btn-success" onclick="Accounts.showCreateModal()" data-roles="admin,manager,teller">+ New Account</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table" id="accountsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Account No</th>
+                                        <th>Holder Name</th>
+                                        <th>Type</th>
+                                        <th>Balance</th>
+                                        <th>Available</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountsTableBody">
+                                    <tr><td colspan="7" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Page -->
+                <div id="transactionsPage" class="page">
+                    <div class="page-actions">
+                        <div class="filters">
+                            <select id="txnStatusFilter" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                                <option value="reversed">Reversed</option>
+                                <option value="stuck">Stuck</option>
+                            </select>
+                            <select id="txnTypeFilter" class="form-control">
+                                <option value="">All Types</option>
+                                <option value="deposit">Deposit</option>
+                                <option value="withdrawal">Withdrawal</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="reversal">Reversal</option>
+                            </select>
+                            <input type="date" id="txnDateFrom" class="form-control">
+                            <input type="date" id="txnDateTo" class="form-control">
+                            <button class="btn btn-primary" onclick="Transactions.load()">Filter</button>
+                        </div>
+                        <div class="action-buttons" data-roles="admin,manager,teller">
+                            <button class="btn btn-success" onclick="Transactions.showDepositModal()">Deposit</button>
+                            <button class="btn btn-warning" onclick="Transactions.showWithdrawModal()">Withdraw</button>
+                            <button class="btn btn-info" onclick="Transactions.showTransferModal()">Transfer</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <tr><td colspan="8" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approvals Page -->
+                <div id="approvalsPage" class="page">
+                    <div class="page-header-row">
+                        <h3>Transfer Approvals</h3>
+                        <button class="btn btn-outline" id="refresh-approvals-btn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" id="pending-approvals-tab" data-tab="pending">
+                            Pending Approvals
+                        </button>
+                        <button class="tab-btn" id="approval-history-tab" data-tab="history">
+                            Approval History
+                        </button>
+                    </div>
+
+                    <div id="pending-approvals-content" class="tab-content active">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="pending-approvals-list">
+                                    <div class="loading">Loading pending approvals...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="approval-history-content" class="tab-content">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="approval-history-list">
+                                    <div class="loading">Loading approval history...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reversals Page -->
+                <div id="reversalsPage" class="page">
+                    <div class="page-header-row">
+                        <h3>Reversible Transactions (Last 24 Hours)</h3>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Available for Reversal</h4>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>From Account</th>
+                                        <th>To Account</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Completed At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reversibleTableBody">
+                                    <tr><td colspan="7" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Reversal History</h4>
+                            <select id="reversalStatusFilter" class="form-control" onchange="Reversals.loadHistory()">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Original Ref</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                        <th>Reason</th>
+                                        <th>Requested By</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reversalHistoryTableBody">
+                                    <tr><td colspan="7" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Page -->
+                <div id="logsPage" class="page">
+                    <div class="page-actions">
+                        <div class="filters">
+                            <select id="logActionFilter" class="form-control">
+                                <option value="">All Actions</option>
+                            </select>
+                            <select id="logEntityFilter" class="form-control">
+                                <option value="">All Entities</option>
+                            </select>
+                            <input type="date" id="logDateFrom" class="form-control">
+                            <input type="date" id="logDateTo" class="form-control">
+                            <button class="btn btn-primary" onclick="Logs.load()">Filter</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Actor</th>
+                                        <th>Role</th>
+                                        <th>Action</th>
+                                        <th>Entity</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody">
+                                    <tr><td colspan="6" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <div class="pagination" id="logsPagination"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div id="reportsPage" class="page">
+                    <div class="reports-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Daily Transaction Volume</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="dailyVolumeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Success vs Failure Rate</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="successRateChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Transaction by Type</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="txnTypeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Account Statistics</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="accountStats">
+                                    <div class="stats-placeholder">Loading statistics...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3>Top Accounts by Volume (30 Days)</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Account Number</th>
+                                        <th>Holder Name</th>
+                                        <th>Type</th>
+                                        <th>Current Balance</th>
+                                        <th>Transaction Count</th>
+                                        <th>Total Volume</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topAccountsTableBody">
+                                    <tr><td colspan="6" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Page -->
+                <div id="simulationPage" class="page">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Testing Environment Only</strong> - These simulations will create real transactions in the database for testing purposes.
+                    </div>
+
+                    <div class="simulation-grid">
+                        <div class="card simulation-card">
+                            <div class="card-header">
+                                <h3>✅ Successful Transaction</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Simulate a successful fund transfer between two random active accounts.</p>
+                                <button class="btn btn-success btn-block" onclick="Simulation.runSuccess()">Run Simulation</button>
+                            </div>
+                        </div>
+
+                        <div class="card simulation-card">
+                            <div class="card-header">
+                                <h3>❌ Failed Transaction</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Simulate a failed transaction due to insufficient funds.</p>
+                                <button class="btn btn-danger btn-block" onclick="Simulation.runFailure()">Run Simulation</button>
+                            </div>
+                        </div>
+
+                        <div class="card simulation-card">
+                            <div class="card-header">
+                                <h3>⏳ Stuck Transaction</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Simulate a transaction stuck in processing state.</p>
+                                <button class="btn btn-warning btn-block" onclick="Simulation.runStuck()">Run Simulation</button>
+                            </div>
+                        </div>
+
+                        <div class="card simulation-card">
+                            <div class="card-header">
+                                <h3>💰 Deposit</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Simulate a cash deposit to a random account.</p>
+                                <button class="btn btn-info btn-block" onclick="Simulation.runDeposit()">Run Simulation</button>
+                            </div>
+                        </div>
+
+                        <div class="card simulation-card" data-roles="admin,manager">
+                            <div class="card-header">
+                                <h3>↩️ Reversal</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Simulate reversing a random completed transaction.</p>
+                                <button class="btn btn-secondary btn-block" onclick="Simulation.runReversal()">Run Simulation</button>
+                            </div>
+                        </div>
+
+                        <div class="card simulation-card" data-roles="admin,manager">
+                            <div class="card-header">
+                                <h3>📦 Bulk Transactions</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Run multiple transactions at once.</p>
+                                <div class="form-group">
+                                    <input type="number" id="bulkCount" class="form-control" value="5" min="1" max="20">
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="Simulation.runBulk()">Run Bulk</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3>Simulation Results</h3>
+                            <button class="btn btn-sm btn-outline" onclick="Simulation.clearResults()">Clear</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="simulationResults" class="simulation-results">
+                                <div class="empty-state">
+                                    <p>No simulations run yet. Click a button above to start.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3>Stuck Transactions Recovery</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Amount</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stuckTransactionsTableBody">
+                                    <tr><td colspan="6" class="empty-state">No stuck transactions</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="modalContent" class="modal-content">
+            <!-- Dynamic modal content -->
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/accounts.js"></script>
+    <script src="js/transactions.js"></script>
+    <script src="js/approvals.js"></script>
+    <script src="js/reversals.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/simulation.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
