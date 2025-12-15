@@ -91,7 +91,7 @@ The `.env` file is already configured with default settings:
 PORT=3000
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=hc@harry123
+DB_PASSWORD=DBMSPASS
 DB_NAME=banking_system
 JWT_SECRET=banking_secret_key_2024
 JWT_EXPIRE=24h
