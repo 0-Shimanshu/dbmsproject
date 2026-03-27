@@ -82,7 +82,7 @@ const Approvals = {
         
         try {
             console.log('Fetching pending approvals from API...');
-            const data = await Api.get('/api/approvals/pending');
+            const data = await Api.get('/approvals/pending');
             console.log('API Response:', data);
             
             if (!data.success) {
@@ -164,7 +164,7 @@ const Approvals = {
         container.innerHTML = '<div class="loading">Loading approval history...</div>';
         
         try {
-            const data = await Api.get('/api/approvals/history');
+            const data = await Api.get('/approvals/history');
             
             if (!data.data || data.data.length === 0) {
                 container.innerHTML = '<div class="no-data">No approval history</div>';
@@ -235,7 +235,7 @@ const Approvals = {
         }
         
         try {
-            const data = await Api.post(`/api/approvals/${approvalId}/process`, {
+            const data = await Api.post(`/approvals/${approvalId}/process`, {
                 approve: true
             });
             
@@ -255,7 +255,7 @@ const Approvals = {
         }
         
         try {
-            const data = await Api.post(`/api/approvals/${approvalId}/process`, {
+            const data = await Api.post(`/approvals/${approvalId}/process`, {
                 approve: false,
                 rejectionReason: reason
             });
