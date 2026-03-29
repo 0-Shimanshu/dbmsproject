@@ -1,0 +1,6 @@
+# Ignore local environment files that may contain real credentials
+.env
+.env.*
+
+# Keep example template committed
+!.env.example

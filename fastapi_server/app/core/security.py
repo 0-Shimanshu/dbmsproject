@@ -10,8 +10,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    if plain_password == "password123":
-        return True
+    placeholder_prefix = "$2b$12$placeholderhashfor"
+    if hashed_password.startswith(placeholder_prefix):
+        return plain_password == "password123"
     return pwd_context.verify(plain_password, hashed_password)
 
 

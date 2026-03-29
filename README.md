@@ -1,24 +1,49 @@
-# Banking Management System
+# Banking Management System (FastAPI + PostgreSQL)
 
-Production-focused banking management application with a vanilla JS frontend and a Python FastAPI backend.
+A production-style banking management platform with a single FastAPI server that serves both:
+- REST API (`/api/*`)
+- Vanilla JavaScript frontend (`client/`)
 
-## Current Tech Stack
+This project demonstrates core banking operations, role-based authorization, approval workflows, reversals, audit logs, reporting, and simulation scenarios.
 
-- Frontend: HTML, CSS, Vanilla JavaScript
-- Backend: FastAPI, SQLAlchemy ORM, Uvicorn
-- Database: PostgreSQL
-- Auth: JWT (`python-jose`) + password hashing (`passlib[bcrypt]`)
+## Tech Stack
 
-## Project Structure
+- **Backend:** FastAPI, SQLAlchemy 2.x, Uvicorn
+- **Database:** PostgreSQL (`psycopg2-binary`)
+- **Authentication:** JWT (`python-jose`) + password hashing (`passlib[bcrypt]`)
+- **Frontend:** HTML, CSS, Vanilla JavaScript
 
-- `client/` UI pages and modules
-- `fastapi_server/` active backend API
-- `sql/schema.sql` PostgreSQL schema bootstrap for the FastAPI backend
+## Key Features
 
-## Quick Start (FastAPI + PostgreSQL)
+- User login/logout with JWT token verification
+- Role-based access: `admin`, `manager`, `teller`, `auditor`
+- Account listing, search, creation, freeze/unfreeze
+- Deposits, withdrawals, and transfers
+- Teller transfer approval flow when daily limit is exceeded
+- Transaction reversal flow with history trail
+- Full audit log and reporting endpoints
+- Transaction simulation (success/failure/stuck/recovery/bulk)
+
+## Repository Structure
+
+- `client/` frontend pages, styles, and feature modules
+- `fastapi_server/` active FastAPI backend
+- `sql/schema.sql` PostgreSQL schema + seed data
+- `COMPLETE_PROJECT_DESCRIPTION.md` full study guide (architecture + workflows + Q&A)
+
+## Quick Start (Windows / PowerShell)
+
+### 1) Create DB and schema
 
 ```powershell
-cd h:\dbmsproject\fastapi_server
+psql -U postgres -c "CREATE DATABASE banking_system;"
+psql -U postgres -d banking_system -f h:\dbmsproject_fastapi\dbmsproject\sql\schema.sql
+```
+
+### 2) Setup backend
+
+```powershell
+cd h:\dbmsproject_fastapi\dbmsproject\fastapi_server
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -26,48 +51,55 @@ copy .env.example .env
 python run.py
 ```
 
-API and frontend are served from the same app at `http://localhost:3000`.
+### 3) Open app
 
-Initialize database schema (once):
+- App URL: `http://localhost:3000`
+- API health: `http://localhost:3000/api/health`
 
-```powershell
-psql -U postgres -d banking_system -f h:\dbmsproject\sql\schema.sql
-```
-
-## Environment Variables
-
-Use `fastapi_server/.env`:
+## Environment Variables (`fastapi_server/.env`)
 
 ```env
 APP_NAME=Banking Management System API
 ENV=development
 HOST=0.0.0.0
 PORT=3000
-JWT_SECRET=change_me
+JWT_SECRET=change_me_to_a_long_random_secret
 JWT_EXPIRES_MINUTES=1440
 DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/banking_system
 ```
 
-## Core API Areas
+## Default Login Users
 
-- `/api/auth` login/verify/logout
-- `/api/dashboard` summary and health data
-- `/api/accounts` account and holder operations
-- `/api/transactions` deposit, withdraw, transfer, history
-- `/api/approvals` manager/admin approval flows
-- `/api/reversals` reversal workflows
-- `/api/logs` audit log queries
-- `/api/reports` operational reporting
-- `/api/simulation` transaction simulation scenarios
-
-## Default Test Users
+After running `sql/schema.sql`, use:
 
 - `admin / password123`
 - `manager1 / password123`
 - `teller1 / password123`
 - `auditor1 / password123`
 
-## Notes
+## API Domains
 
-- The frontend API base path remains `/api` for compatibility.
-- Legacy Node/Express backend files have been removed from this repository.
+- `/api/auth` - login, logout, session verify
+- `/api/dashboard` - summary, recent activity, system health
+- `/api/accounts` - account and holder operations
+- `/api/transactions` - transaction operations and history
+- `/api/approvals` - manager/admin approval workflow
+- `/api/reversals` - transaction reversal operations
+- `/api/logs` - audit log browsing and filters
+- `/api/reports` - analytics and KPI endpoints
+- `/api/simulation` - test scenario generation/recovery
+
+## Development Notes
+
+- Frontend is served by FastAPI static mount from `client/`
+- API base path is `/api` and already wired in `client/js/api.js`
+- SQL schema is currently the source of truth for DB structure and seed users
+
+## Documentation
+
+- GitHub overview: this file (`README.md`)
+- Complete project study guide: `COMPLETE_PROJECT_DESCRIPTION.md`
+
+## Legacy Docs
+
+Legacy docs were consolidated; older markdown files now point to the two docs above.

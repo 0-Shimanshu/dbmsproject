@@ -180,7 +180,8 @@ ON CONFLICT (config_key) DO NOTHING;
 
 -- ============================================================
 -- DEFAULT USERS FOR TESTING
--- NOTE: password verification currently allows plain password123 in code.
+-- NOTE: seed users use placeholder hashes; login accepts password123 only
+--       for those placeholder entries (see app/core/security.py).
 -- ============================================================
 
 INSERT INTO users (username, password_hash, full_name, email, role, is_active) VALUES
